@@ -57,7 +57,7 @@ class ZhihuSpider(scrapy.Spider):
             "source": source,
             "signature": self.get_signature(grantType, clientId, source, timestamp),  # 获取签名
             "username": "15112580677",
-            "password": "lizhenhao0524",
+            "password": "123456",
             "lang": "cn",
             "captcha": self.get_captcha(captcha_content, need_cap),  # 获取图片验证码
             "ref_source": "homepage",
