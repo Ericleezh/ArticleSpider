@@ -39,19 +39,22 @@ class ZhihuSpider(scrapy.Spider):
         all_urls = filter(lambda x:True if x.startswith("https") else False,all_urls)#过滤无用的url
         for url in all_urls:
             print(url)
-            match_obj = re.match("(.*zhihu.com/question/(\d+))(/|$)",url)
+            match_obj = re.match("(.*zhihu.com/question/(\d+))(/|$).*",url)
             if match_obj:
                 #如果提取到question的页面，则交给提取函数进行处理
                 request_url = match_obj.group(1)
                 #深度优先遍历的入口
+
                 yield scrapy.Request(request_url,headers=self.headers,callback=self.parse_question)
+                break
             else:
                 #若不是则进一步跟踪
-                yield scrapy.Request(url,headers=self.headers,callback=self.parse)
+                # pass
+               yield scrapy.Request(url,headers=self.headers,callback=self.parse)
 
     def parse_question(self,response):
         #处理question，从页面中提取出具体的question item
-        match_obj  = re.match("(.*zhihu.com/question/(\d+))(/|$)",response.url)
+        match_obj  = re.match("(.*zhihu.com/question/(\d+))(/|$).*",response.url)
         if match_obj:
             question_id = int(match_obj.group(2))
 
@@ -106,16 +109,8 @@ class ZhihuSpider(scrapy.Spider):
     #         fb.write(data)
     #     return input('captcha:')
 
-    # def get_signature(self,grantType, clientId, source, timestamp):
-    #     #处理签名
-    #
-    #     hm = hmac.new(b'd1b964811afb40118a12068ff74a12f4', None, sha1)
-    #     hm.update(str.encode(grantType))
-    #     hm.update(str.encode(clientId))
-    #     hm.update(str.encode(source))
-    #     hm.update(str.encode(timestamp))
-    #
-    #     return str(hm.hexdigest())
+
+
     def start_requests(self):
         return [scrapy.Request('https://www.zhihu.com/api/v3/oauth/captcha?lang=en',headers=self.headers,callback=self.login)]
 
