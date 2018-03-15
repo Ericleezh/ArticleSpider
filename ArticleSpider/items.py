@@ -12,6 +12,7 @@ from scrapy.loader.processors import MapCompose,TakeFirst,Join
 from scrapy.loader import ItemLoader
 from ArticleSpider.utils.common import extract_num
 from ArticleSpider.settings import SQL_DATE_FORMAT,SQL_DATETIME_FORMAT
+from w3lib.html import remove_tags
 
 class ArticlespiderItem(scrapy.Item):
     # define the fields for your item here like:
@@ -162,6 +163,73 @@ class ZhihuAnswerItem(scrapy.Item):
             self["zhihu_id"],self["url"],self["question_id"],
             self["author_id"],self["content"],self["praise_num"],
             self["comments_num"],create_time,update_time,
+            self["crawl_time"].strftime(SQL_DATETIME_FORMAT),
+        )
+
+        return  insert_sql,params
+
+
+def remove_splash(value):
+    return value.replace("/","")
+
+def handle_jobaddr(value):
+    addr_list = value.split("\n")
+    addr_list = [ item.strip() for item in addr_list if item.strip()!="查看地图"]
+    return "".join(addr_list)
+
+class LagouItemLoader(ItemLoader):
+    #自定义itemloader
+    default_output_processor = TakeFirst()
+
+class LagouJobItem(scrapy.Item):
+    #拉勾网职位信息
+    url = scrapy.Field()
+    url_object_id = scrapy.Field()
+    title = scrapy.Field()
+    salary = scrapy.Field()
+    job_city = scrapy.Field(
+        input_processor=MapCompose(remove_splash)
+    )
+    work_years = scrapy.Field(
+        input_processor=MapCompose(remove_splash)
+    )
+    degree_need = scrapy.Field(
+        input_processor=MapCompose(remove_splash)
+    )
+    job_type = scrapy.Field()
+    publish_time = scrapy.Field()
+    tags = scrapy.Field(
+        input_processor=Join(",")
+    )
+    job_advantage = scrapy.Field()
+    job_desc = scrapy.Field(
+        input_processor=MapCompose(remove_tags,handle_jobaddr)
+    )
+    job_addr = scrapy.Field(
+        input_processor=MapCompose(remove_tags,handle_jobaddr)
+    )
+    company_url = scrapy.Field()
+    company_name = scrapy.Field()
+    crawl_time = scrapy.Field()
+
+    def get_insert_sql(self):
+        #插入知乎question数据
+        #防止主键冲突，再次爬取时遇到相同则更新
+        insert_sql = """
+           insert into lagou_job(url,url_object_id, title, salary, job_city, work_years, degree_need,
+              job_type,publish_time,tags,job_advantage,job_desc,job_addr,company_url,company_name,crawl_time)
+           VALUE (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+           ON DUPLICATE KEY UPDATE url=VALUES(url),url_object_id=VALUES(url_object_id),title=VALUES(title),salary=VALUES(salary)
+           ,job_city=VALUES(job_city),work_years=VALUES(work_years),degree_need=VALUES(degree_need),job_type=VALUES(job_type)
+           ,job_advantage=VALUES(job_advantage),job_addr=VALUES(job_addr)
+           """
+
+        params = (
+            self["url"],self["url_object_id"],self["title"],
+            self["salary"],self["job_city"],self["work_years"],
+            self["degree_need"], self["job_type"], self["publish_time"],
+            self["tags"], self["job_advantage"], self["job_desc"],
+            self["job_addr"], self["company_url"], self["company_name"],
             self["crawl_time"].strftime(SQL_DATETIME_FORMAT),
         )
 
