@@ -54,9 +54,11 @@ ROBOTSTXT_OBEY = False
 
 # Enable or disable downloader middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
-#DOWNLOADER_MIDDLEWARES = {
-#    'ArticleSpider.middlewares.MyCustomDownloaderMiddleware': 543,
-#}
+DOWNLOADER_MIDDLEWARES = {
+   'ArticleSpider.middlewares.RandomUserAgentMiddleware': 543,
+    'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
+
+}
 
 # Enable or disable extensions
 # See http://scrapy.readthedocs.org/en/latest/topics/extensions.html
@@ -74,13 +76,13 @@ ITEM_PIPELINES = {
    #  'ArticleSpider.pipelines.ArticleImagePipeline': 1,
    #  'ArticleSpider.pipelines.MysqlPipeline': 1,
     'ArticleSpider.pipelines.MysqlTwistedPipeline': 1,
-
 }
 IMAGES_URLS_FIELD = "front_image_url"
 project_dir = os.path.abspath(os.path.dirname(__file__))
 #设置图片存放路径
 IMAGES_STORE = os.path.join(project_dir,'images')
 
+RANDOM_UA_TYPE = "random"
 #过滤图片
 # IMAGES_MIN_HEIGHT = 100
 # IMAGES_MIN_WIDTH = 100
