@@ -79,9 +79,10 @@ class JobBoleArticleItem(scrapy.Item) :
 
     def get_insert_sql(self):
         insert_sql = """
-           insert into jobbole_article(title,url,url_object_id,create_date,fav_nums,comment_nums,praise_nums,tags)
+           insert into jobbole_article(title, url, url_object_id, create_date, fav_nums, comment_nums, praise_nums, tags)
            VALUE (%s,%s,%s,%s,%s,%s,%s,%s)
-           ON DUPLICATE KEY UPDATE title=VALUES(title),fav_nums=VALUES(fav_nums),comment_nums=VALUES(comment_nums),praise_nums=VALUES(praise_nums),
+           ON DUPLICATE KEY UPDATE title=VALUES(title),fav_nums=VALUES(fav_nums),
+           comment_nums=VALUES(comment_nums),praise_nums=VALUES(praise_nums)
            """
 
         params = (self["title"], self["url"], self["url_object_id"], self["create_date"], self["fav_nums"], self["comment_nums"],
